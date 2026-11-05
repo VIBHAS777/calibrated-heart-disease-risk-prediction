@@ -1,41 +1,37 @@
-import numpy as np
-from src.calibration import ProbabilisticCalibrator
+"""
+Main entry point for Heart Disease Risk Prediction using Calibrated Deep Learning.
+Publication: Engineered Science (Q1 Journal, ES-2026-0082)
+"""
+
+import sys
+from src.calibrated_mlp_pipeline import run_calibrated_pipeline
 
 def main():
-    print("=" * 70)
-    print("  Calibrated Deep Learning for Heart Disease Risk Prediction")
-    print("  Publication: Engineered Science (Q1 Journal, ES-2026-0082)")
-    print("=" * 70)
+    print("=" * 76)
+    print("  CALIBRATED DEEP LEARNING FOR HEART DISEASE RISK PREDICTION")
+    print("  Journal: Engineered Science (Manuscript ID: ES-2026-0082.R2)")
+    print("=" * 76)
 
-    np.random.seed(42)
-    n_samples = 200
-    y_true = np.random.binomial(1, 0.45, size=n_samples)
-    raw_probs = np.clip(y_true * 0.75 + np.random.normal(0.15, 0.15, size=n_samples), 0.01, 0.99)
-    
-    platt_engine = ProbabilisticCalibrator(method="platt")
-    platt_engine.fit(raw_probs, y_true)
-    calibrated_probs = platt_engine.calibrate(raw_probs)
+    print("\n[Phase 1] Executing Complete Clinical Calibration Pipeline...")
+    results = run_calibrated_pipeline(output_dir="outputs")
 
-    raw_brier = platt_engine.brier_score(y_true, raw_probs)
-    calibrated_brier = platt_engine.brier_score(y_true, calibrated_probs)
-
-    print("[*] Evaluating Clinical Probability Calibration on Test Cohort:\n")
-    print(f"  Uncalibrated Raw Model Brier Score : {raw_brier:.4f}")
-    print(f"  Platt Calibrated Model Brier Score : {calibrated_brier:.4f} (Significant Reliability Gain)")
-    
-    patient_raw = 0.88
-    patient_calibrated = platt_engine.calibrate(np.array([patient_raw]))[0]
-    print(f"\n  [Clinical Sample Assessment]")
-    print(f"    - Raw Overconfident Prediction : {patient_raw*100:.1f}%")
-    print(f"    - True Calibrated Probability  : {patient_calibrated*100:.1f}%")
-
-    print("\n" + "=" * 70)
-    print("  PUBLISHED EMPIRICAL RESULTS (Engineered Science Journal)")
-    print("=" * 70)
-    print("  Model Test Accuracy      : 96.42%")
-    print("  Final Calibrated Brier   : 0.0489 (Optimal Clinical Calibration)")
-    print("  False Negative Rate (FNR): < 3.0% (Critical for Emergency Cardiac Triage)")
-    print("=" * 70)
+    print("\n" + "=" * 76)
+    print("  EMPIRICAL EVALUATION RESULTS (Clinical Cohort):")
+    print("=" * 76)
+    print(f"  • Test Cohort Size            : {results['test_samples']} patients")
+    print(f"  • Classification Accuracy     : {results['test_accuracy']*100:.2f}%")
+    print(f"  • Raw Uncalibrated Brier Score: {results['uncalibrated_brier_score']:.4f}")
+    print(f"  • Calibrated Ensemble Brier   : {results['calibrated_brier_score']:.4f} ({results['brier_improvement_percent']}% error reduction)")
+    print(f"  • Cross-Entropy Log Loss      : {results['log_loss']:.4f}")
+    print(f"  • ROC-AUC Discrimination      : {results['roc_auc']:.4f}")
+    print(f"  • Calibration Reliability Plot: {results['calibration_plot']}")
+    print(f"  • ROC-AUC Curve Plot          : {results['roc_plot']}")
+    print("=" * 76)
+    print("  MULTI-ORGAN DEPENDENCY PIPELINE SCRIPTS:")
+    print("  - pipeline/heart.py             : Full NHANES cardio-metabolic risk architecture")
+    print("  - pipeline/predict_patient.py   : Patient-level multi-organ risk scoring")
+    print("  - pipeline/xai_module.py        : Explainable AI & feature attribution")
+    print("=" * 76)
 
 if __name__ == "__main__":
     main()
